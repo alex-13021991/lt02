@@ -1,0 +1,6 @@
+#!/system/bin/sh
+
+# Ketut P. Kumajaya, Sept 2013
+
+# -- CIFS filesystem
+# insmod /system/lib/modules/cifs.ko
