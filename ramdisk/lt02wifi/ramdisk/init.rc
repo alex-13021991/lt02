@@ -766,6 +766,12 @@ service bt_dut_cmd /system/bin/mrvl_dut
 service installd /system/bin/installd
     class main
     socket installd stream 600 system system
+	
+# alex-13021991: add suport init.d
+service sysinit /system/bin/logwrapper /system/xbin/busybox run-parts /system/etc/init.d 
+    class core 
+    user root 
+    oneshot	
 
 # blackhawk: disable OTA recovery update
 # service flash_recovery /system/etc/install-recovery.sh
