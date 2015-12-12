@@ -58,8 +58,8 @@ if /sbin/busybox [ ! -f /system/blackhawk/release-21- ]; then
   /sbin/busybox chmod 600 /data/property/persist.sys.ui.hw
 
   # Add compcache
-  /sbin/busybox cp -f /res/misc/compcache /system/bin/compcache
-  /sbin/busybox chmod 755 /system/bin/compcache
+  #/sbin/busybox cp -f /res/misc/compcache /system/bin/compcache
+  #/sbin/busybox chmod 755 /system/bin/compcache
 
   # Once be enough
   /sbin/busybox mkdir -p /system/blackhawk
