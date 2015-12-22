@@ -21,7 +21,7 @@
 
 //2 to the power of 15, see csnappy.h
 #define SNAPPY_NEEDED_MEM 32768
-#define SNAPPY_WORKMEM_P2 15
+#define SNAPPY_WORKMEM_P2 9
 
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -212,7 +212,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 			  u32 index, int offset, struct bio *bio)
 {
 	int ret;
-	size_t clen;
+	uint32_t clen;
 	struct page *page;
 	struct zobj_header *zheader;
 	unsigned char *user_mem, *cmem, *uncmem = NULL;
