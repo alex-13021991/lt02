@@ -254,7 +254,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 
 	cmem = zs_map_object(zram->mem_pool, zram->table[index].handle);
 
-	ret = csnappy_decompress_safe(cmem + sizeof(*zheader),
+	ret = csnappy_decompress(cmem + sizeof(*zheader),
 				    zram->table[index].size,
 				    uncmem, &clen);
 
@@ -282,7 +282,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 static int zram_read_before_write(struct zram *zram, char *mem, u32 index)
 {
 	int ret;
-	size_t clen = PAGE_SIZE;
+	uint32_t clen = PAGE_SIZE;
 	struct zobj_header *zheader;
 	unsigned char *cmem;
 
@@ -301,7 +301,7 @@ static int zram_read_before_write(struct zram *zram, char *mem, u32 index)
 		return 0;
 	}
 
-	ret = csnappy_decompress_safe(cmem + sizeof(*zheader),
+	ret = csnappy_decompress(cmem + sizeof(*zheader),
 				    zram->table[index].size,
 				    mem, &clen);
 	zs_unmap_object(zram->mem_pool, zram->table[index].handle);
@@ -321,7 +321,7 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 {
 	int ret;
 	u32 store_offset;
-	size_t clen;
+	uint32_t clen;
 	void *handle;
 	struct zobj_header *zheader;
 	struct page *page, *page_store;
@@ -374,8 +374,8 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 		goto out;
 	}
 
-	ret = csnappy_1_compress(uncmem, PAGE_SIZE, src, &clen,
-			       zram->compress_workmem);
+	ret = csnappy_compress(uncmem, PAGE_SIZE, src, &clen,
+			       zram->compress_workmem, SNAPPY_WORKMEM_P2);
 
 	kunmap_atomic(user_mem);
 	if (is_partial_io(bvec))
@@ -640,7 +640,7 @@ int zram_init_device(struct zram *zram)
 
 	zram_set_disksize(zram, totalram_pages << PAGE_SHIFT);
 
-	zram->compress_workmem = kzalloc(SNAPPY_MEM_COMPRESS, GFP_KERNEL);
+	zram->compress_workmem = kzalloc(SNAPPY_NEEDED_MEM, GFP_KERNEL);
 	if (!zram->compress_workmem) {
 		pr_err("Error allocating compressor working memory!\n");
 		ret = -ENOMEM;
