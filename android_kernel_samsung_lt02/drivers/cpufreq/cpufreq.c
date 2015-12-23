@@ -606,7 +606,6 @@ static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
 
 		out += sprintf(out, "%lumhz: %i mV\n",
 						component_freqs[0][i]/1000, // CORE == 0
- 						get_voltage_value(i));
 						get_voltage_value(j));
 //						pxa988_get_vl(i));
 	}
