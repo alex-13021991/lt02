@@ -519,7 +519,7 @@ static struct dvfs_rail_component vm_rail_comp_tbl_z1z2[VM_RAIL_MAX] = {
 };
 
 static unsigned long freqs_cmb_z3[VM_RAIL_MAX][VL_MAX] = {
-	{ 312000, 624000, 1066000, 1205000 },	/* CORE */
+	{ 312000, 624000, 1066000, 1420000 },	/* CORE */
 	{ 312000, 312000, 533000, 533000 },	/* DDR/AXI */
 	{ 0	, 416000, 624000, 624000 },	/* GC */
 	{ 208000, 312000, 416000, 416000 }	/* VPU */
@@ -537,7 +537,7 @@ static struct dvfs_rail_component vm_rail_comp_tbl_z3[VM_RAIL_MAX] = {
 };
 
 static unsigned long freqs_cmb_ax[VM_RAIL_MAX][VL_MAX] = {
-	{ 624000, 624000, 1066000, 1205000 },	/* CORE */
+	{ 624000, 624000, 1066000, 1420000 },	/* CORE */
 	{ 312000, 312000, 312000, 533000 },	/* DDR/AXI */
 	{ 0, 416000, 624000, 624000 },	/* GC */
 	{ 0, 312000, 416000, 416000 }	/* VPU */
@@ -686,7 +686,7 @@ static struct dvfs_rail pxa988_dvfs_rail_apsub_sleep = {
 #define MAX_FREQ_NUM	20
 /* Each components' freq number should be the same with voltage level number */
 unsigned long component_freqs[VM_RAIL_MAX][MAX_FREQ_NUM] = {
-	{ 312000, 624000, 1066000, 1205000 },		/* CORE */
+	{ 312000, 624000, 1066000, 1420000 },		/* CORE */
 	{ 156000, 312000, 533000 },			/* DDR/AXI */
 	{ 156000, 312000, 416000, 624000 },		/* GC */
 	{ 156000, 208000, 312000, 416000 }		/* VPU */

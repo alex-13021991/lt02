@@ -3401,9 +3401,9 @@ static void __init clk_misc_init(void)
 		}
 	}
 
-	pll3_vco_default = 1205 * MHZ;
-	pll3_default = 1205 * MHZ;
-	pll3p_default = 1205 * MHZ;
+	pll3_vco_default = 1420 * MHZ;
+	pll3_default = 1420 * MHZ;
+	pll3p_default = 1420 * MHZ;
 
 	/* DE suggest:enable SQU MP3 playback sleep mode */
 	__raw_writel(__raw_readl(APMU_SQU_CLK_GATE_CTRL) | (1 << 30),

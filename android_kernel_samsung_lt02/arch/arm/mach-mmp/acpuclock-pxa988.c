@@ -469,11 +469,11 @@ static struct pxa988_cpu_opt pxa988_op_array_z3ax_lpddr400[] = {
 		.ap_clk_sel = AP_CLK_SRC_PLL2,
 	},
 	{
-		.pclk = 1205,
-		.l2clk = 602,
-		.pdclk = 602,
-		.baclk = 301,
-		.periphclk = 150,
+		.pclk = 1420,
+		.l2clk = 710,
+		.pdclk = 710,
+		.baclk = 355,
+		.periphclk = 177,
 		.ap_clk_sel = AP_CLK_SRC_PLL3P,
 	},
 };
@@ -504,11 +504,11 @@ static struct pxa988_cpu_opt pxa988_op_array_z3ax_lpddr533[] = {
 		.ap_clk_sel = AP_CLK_SRC_PLL2,
 	},
 	{
-		.pclk = 1205,
-		.l2clk = 602,
-		.pdclk = 602,
-		.baclk = 301,
-		.periphclk = 150,
+		.pclk = 1420,
+		.l2clk = 710,
+		.pdclk = 710,
+		.baclk = 355,
+		.periphclk = 177,
 		.ap_clk_sel = AP_CLK_SRC_PLL3P,
 	},
 };
@@ -693,11 +693,12 @@ static void __init __init_platform_opt(int ddr_mode)
 static struct cpu_rtcwtc cpu_rtcwtc_z3[] = {
 	{.max_pclk = 800, .l1_rtc = 0x88888888, .l2_rtc = 0x00008444,},
 	{.max_pclk = 1205, .l1_rtc = 0x99999999, .l2_rtc = 0x00009555,},
+	{.max_pclk = 1420, .l1_rtc = 0x99999999, .l2_rtc = 0x00009555,},
 };
 static struct cpu_rtcwtc cpu_rtcwtc_ax[] = {
 	{.max_pclk = 800, .l1_rtc = 0x88888888, .l2_rtc = 0x00008444,},
 	{.max_pclk = 1066, .l1_rtc = 0x99999999, .l2_rtc = 0x00009555,},
-	{.max_pclk = 1205, .l1_rtc = 0xAAAAAAAA, .l2_rtc = 0x0000A555,},
+	{.max_pclk = 1420, .l1_rtc = 0xAAAAAAAA, .l2_rtc = 0x0000A555,},
 };
 static void __init __init_cpu_rtcwtc(struct pxa988_cpu_opt *cpu_opt)
 {
