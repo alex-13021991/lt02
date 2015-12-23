@@ -579,6 +579,119 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
+#ifdef CONFIG_VOLTAGE_CONTROL
+
+#include "../../arch/arm/mach-mmp/include/mach/dvfs.h"
+
+#define VOLTAGE_DEBUG 1
+static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
+{
+	int i, j = 0;
+	int max = 0;
+	char *out = buf;
+	extern unsigned long component_freqs[4][20];
+	extern int get_voltage_value(int level);
+	
+	/* How many entries do we have? */
+	max = pxa988_get_vl_num();
+	
+	for (i = 0; i < max; i++) {
+		/* WTF... */
+		if (i == 1)
+			j = 2;
+		else if (i == 2)
+			j = 1;
+		else
+			j = i;
+
+		out += sprintf(out, "%lumhz: %i mV\n",
+						component_freqs[0][i]/1000, // CORE == 0
+ 						get_voltage_value(i));
+						get_voltage_value(j));
+//						pxa988_get_vl(i));
+	}
+	
+	return out - buf;
+}
+
+static ssize_t store_UV_mV_table(struct cpufreq_policy *policy, const char *buf, size_t count)
+{
+	extern int set_voltage_value(int level, int value);
+	extern struct dvfs_rail pxa988_dvfs_rail_vm;
+	unsigned int ret = 0; // -EINVAL
+	int i, j = 0;
+	int max = 0;
+	int error = 0;
+	unsigned int volt_cur;
+	unsigned int mv[20];
+	char size_cur[20];
+	
+	/* We're using the min/max voltages from dvfs-pxa988.c */
+	pr_info("Min voltage is: %d", pxa988_dvfs_rail_vm.min_millivolts);
+	pr_info("Max voltage is: %d", pxa988_dvfs_rail_vm.max_millivolts);
+
+	/* How many entries do we have? */
+	max = pxa988_get_vl_num();
+	
+	/* READ ALL TEH VOLTAGES!!! */
+	for (i = 0; i < max; i++) {
+		ret = sscanf(buf, "%lu", &volt_cur);
+#ifdef VOLTAGE_DEBUG
+		pr_info("laufersteppenwolf: new voltages at [%i], level %i:\n", i, i+1);
+		pr_info("%lu\n", volt_cur);
+#endif
+
+		mv[i] = volt_cur;
+		ret = sscanf(buf, "%s", size_cur);
+		buf += (strlen(size_cur)+1);
+		
+		if (volt_cur > pxa988_dvfs_rail_vm.max_millivolts ||
+			volt_cur < pxa988_dvfs_rail_vm.min_millivolts) {
+				pr_info("New voltage %d at [%i], level %i is out or range!\n",\
+						volt_cur, i, i+1);
+				pr_info("Voltage has to be between %d and %d mV!\n", \
+						pxa988_dvfs_rail_vm.min_millivolts, \
+						pxa988_dvfs_rail_vm.max_millivolts);
+				error++;
+			}
+	}
+	
+	if (error != 0) {
+		pr_info("Voltages are not being applied!\n");
+		pr_info("%d values are out of range!\n", error);
+		goto out;
+	}
+
+#ifdef VOLTAGE_DEBUG	
+	/* Debugging... */
+	pr_info("Done reading, new voltages are:\n");
+	for (i = 0; i < max; i++) {
+		pr_info("%d\n", mv[i]);
+	}
+#endif
+	
+	/* Applying new voltages */
+	/* Note: Voltages are being applied in 12.5mV steps */
+	/******** TODO: check for min and max values *******/
+	for (i = 0; i < max; i++) {
+		+		
+		/* WTF... */
+		if (i == 1)
+			j = 2;
+		else if (i == 2)
+			j = 1;
+		else
+			j = i;
+			
+		pr_info("Applying %d mV at level %i\n", mv[j], i+1);
+		ret = set_voltage_value(i, mv[j]);
+	}
+
+out:	
+	return count;
+}
+#endif
+
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
 cpufreq_freq_attr_ro(cpuinfo_min_freq);
 cpufreq_freq_attr_ro(cpuinfo_max_freq);
@@ -593,6 +706,9 @@ cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
+#ifdef CONFIG_VOLTAGE_CONTROL
+cpufreq_freq_attr_rw(UV_mV_table);
+#endif
 
 static struct attribute *default_attrs[] = {
 	&cpuinfo_min_freq.attr,
@@ -606,6 +722,9 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
+#ifdef CONFIG_VOLTAGE_CONTROL
+	&UV_mV_table.attr,
+#endif
 	NULL
 };
 

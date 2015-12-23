@@ -334,5 +334,11 @@ config SEC_THERMISTOR
 	default n
 	help
 	  Use thermistor driver to check system temperature
-
+  
+config VOLTAGE_CONTROL
+	bool "Enable user voltage control interface"
+	default n
+	help
+	  Enable the userspace voltage control interface
+  
 endif

@@ -269,7 +269,7 @@ static int get_stable_ticks(int millivolts1, int millivolts2)
 static int stable_time_inited;
 
 /* Set PMIC voltage value of a specific level */
-static int set_voltage_value(int level, int value)
+int set_voltage_value(int level, int value)
 {
 	unsigned int regval;
 	int ret = 0;
@@ -278,6 +278,7 @@ static int set_voltage_value(int level, int value)
 		return -EINVAL;
 	}
 	regval = volt_to_reg(value);
+	pr_info("regval is: %d", regval);
 	ret = pm800_extern_write(PM80X_POWER_PAGE,
 			PM800_BUCK1 + level, regval);
 	if (ret)
@@ -286,7 +287,7 @@ static int set_voltage_value(int level, int value)
 }
 
 /* Read PMIC to get voltage value according to level */
-static int get_voltage_value(int level)
+int get_voltage_value(int level)
 {
 	int reg, value;
 	if (level < 0 || level > 3) {
@@ -480,7 +481,7 @@ EXPORT_SYMBOL(dvc_set_voltage);
  * used. This can avoid tmp voltage which is not in saved
  * in 4 level regulator table.
  */
-static struct dvfs_rail pxa988_dvfs_rail_vm = {
+struct dvfs_rail pxa988_dvfs_rail_vm = {
 	.reg_id = "vcc_main",
 	.max_millivolts = 1400,
 	.min_millivolts = 1000,
@@ -641,6 +642,10 @@ static int __init setup_dvfs_platinfo(void)
 		vm_millivolts[1] = vm_millivolts[2];
 		vm_millivolts[2] = i;
 #endif
+		pr_info("laufersteppenwolf: vm_millivolts: \n");
+		for (i = 0; i< VL_MAX; i++) {
+			pr_info("%d\n", vm_millivolts[i]);
+		}
 	}
 	return 0;
 }
@@ -680,7 +685,7 @@ static struct dvfs_rail pxa988_dvfs_rail_apsub_sleep = {
 
 #define MAX_FREQ_NUM	20
 /* Each components' freq number should be the same with voltage level number */
-static unsigned long component_freqs[VM_RAIL_MAX][MAX_FREQ_NUM] = {
+unsigned long component_freqs[VM_RAIL_MAX][MAX_FREQ_NUM] = {
 	{ 312000, 624000, 1066000, 1205000 },		/* CORE */
 	{ 156000, 312000, 533000 },			/* DDR/AXI */
 	{ 156000, 312000, 416000, 624000 },		/* GC */
