@@ -68,7 +68,7 @@ static DEFINE_PER_CPU(int, cpufreq_policy_cpu);
 static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
 
 #define lock_policy_rwsem(mode, cpu)					\
-static int lock_policy_rwsem_##mode					\
+int lock_policy_rwsem_##mode					\
 (int cpu)								\
 {									\
 	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);		\
@@ -86,14 +86,14 @@ lock_policy_rwsem(read, cpu);
 
 lock_policy_rwsem(write, cpu);
 
-static void unlock_policy_rwsem_read(int cpu)
+void unlock_policy_rwsem_read(int cpu)
 {
 	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);
 	BUG_ON(policy_cpu == -1);
 	up_read(&per_cpu(cpu_policy_rwsem, policy_cpu));
 }
 
-static void unlock_policy_rwsem_write(int cpu)
+void unlock_policy_rwsem_write(int cpu)
 {
 	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);
 	BUG_ON(policy_cpu == -1);
@@ -603,7 +603,7 @@ static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
 			j = 1;
 		else
 			j = i;
-
+			
 		out += sprintf(out, "%lumhz: %i mV\n",
 						component_freqs[0][i]/1000, // CORE == 0
 						get_voltage_value(j));
@@ -673,7 +673,7 @@ static ssize_t store_UV_mV_table(struct cpufreq_policy *policy, const char *buf,
 	/* Note: Voltages are being applied in 12.5mV steps */
 	/******** TODO: check for min and max values *******/
 	for (i = 0; i < max; i++) {
-		+		
+		
 		/* WTF... */
 		if (i == 1)
 			j = 2;
