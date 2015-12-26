@@ -21,7 +21,7 @@
 
 //2 to the power of 15, see csnappy.h
 #define SNAPPY_NEEDED_MEM 32768
-#define SNAPPY_WORKMEM_P2 9
+#define SNAPPY_WORKMEM_P2 15
 
 #include <linux/module.h>
 #include <linux/kernel.h>
