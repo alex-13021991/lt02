@@ -19,10 +19,6 @@
 #define DEBUG
 #endif
 
-//2 to the power of 15, see csnappy.h
-#define SNAPPY_NEEDED_MEM 32768
-#define SNAPPY_WORKMEM_P2 15
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/bio.h>
@@ -33,8 +29,7 @@
 #include <linux/genhd.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
-//#include <linux/lzo.h>
-#include "../snappy/csnappy.h"
+#include <linux/lzo.h>
 #include <linux/string.h>
 #include <linux/vmalloc.h>
 
@@ -212,7 +207,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 			  u32 index, int offset, struct bio *bio)
 {
 	int ret;
-	uint32_t clen;
+	size_t clen;
 	struct page *page;
 	struct zobj_header *zheader;
 	unsigned char *user_mem, *cmem, *uncmem = NULL;
@@ -254,7 +249,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 
 	cmem = zs_map_object(zram->mem_pool, zram->table[index].handle);
 
-	ret = csnappy_decompress(cmem + sizeof(*zheader),
+	ret = lzo1x_decompress_safe(cmem + sizeof(*zheader),
 				    zram->table[index].size,
 				    uncmem, &clen);
 
@@ -268,7 +263,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 	kunmap_atomic(user_mem);
 
 	/* Should NEVER happen. Return bio error if it does. */
-	if (unlikely(ret != CSNAPPY_E_OK)) {
+	if (unlikely(ret != LZO_E_OK)) {
 		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
 		zram_stat64_inc(zram, &zram->stats.failed_reads);
 		return ret;
@@ -282,7 +277,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 static int zram_read_before_write(struct zram *zram, char *mem, u32 index)
 {
 	int ret;
-	uint32_t clen = PAGE_SIZE;
+	size_t clen = PAGE_SIZE;
 	struct zobj_header *zheader;
 	unsigned char *cmem;
 
@@ -301,13 +296,13 @@ static int zram_read_before_write(struct zram *zram, char *mem, u32 index)
 		return 0;
 	}
 
-	ret = csnappy_decompress(cmem + sizeof(*zheader),
+	ret = lzo1x_decompress_safe(cmem + sizeof(*zheader),
 				    zram->table[index].size,
 				    mem, &clen);
 	zs_unmap_object(zram->mem_pool, zram->table[index].handle);
 
 	/* Should NEVER happen. Return bio error if it does. */
-	if (unlikely(ret != CSNAPPY_E_OK)) {
+	if (unlikely(ret != LZO_E_OK)) {
 		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
 		zram_stat64_inc(zram, &zram->stats.failed_reads);
 		return ret;
@@ -321,7 +316,7 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 {
 	int ret;
 	u32 store_offset;
-	uint32_t clen;
+	size_t clen;
 	void *handle;
 	struct zobj_header *zheader;
 	struct page *page, *page_store;
@@ -374,14 +369,14 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 		goto out;
 	}
 
-	ret = csnappy_compress(uncmem, PAGE_SIZE, src, &clen,
-			       zram->compress_workmem, SNAPPY_WORKMEM_P2);
+	ret = lzo1x_1_compress(uncmem, PAGE_SIZE, src, &clen,
+			       zram->compress_workmem);
 
 	kunmap_atomic(user_mem);
 	if (is_partial_io(bvec))
 			kfree(uncmem);
 
-	if (unlikely(ret != CSNAPPY_E_OK)) {
+	if (unlikely(ret != LZO_E_OK)) {
 		pr_err("Compression failed! err=%d\n", ret);
 		goto out;
 	}
@@ -413,7 +408,7 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 	handle = zs_malloc(zram->mem_pool, clen + sizeof(*zheader));
 	if (!handle) {
 		pr_info("Error allocating memory for compressed "
-			"page: %u, size=%u\n", index, clen);
+			"page: %u, size=%zu\n", index, clen);
 		ret = -ENOMEM;
 		goto out;
 	}
@@ -640,7 +635,7 @@ int zram_init_device(struct zram *zram)
 
 	zram_set_disksize(zram, totalram_pages << PAGE_SHIFT);
 
-	zram->compress_workmem = kzalloc(SNAPPY_NEEDED_MEM, GFP_KERNEL);
+	zram->compress_workmem = kzalloc(LZO1X_MEM_COMPRESS, GFP_KERNEL);
 	if (!zram->compress_workmem) {
 		pr_err("Error allocating compressor working memory!\n");
 		ret = -ENOMEM;
